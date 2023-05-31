@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 public class TestController {
     private BigDecimal money=new BigDecimal(1000000);
 
-    @Limit(dqs = 1)
+    @Limit(dqs = 10)
     @RequestMapping(value = "get",method = RequestMethod.GET)
     public String getMoney(){
         return "成功";
