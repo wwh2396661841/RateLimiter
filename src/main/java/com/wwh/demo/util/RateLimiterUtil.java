@@ -22,7 +22,7 @@ public class RateLimiterUtil {
     /** 默认缓存时效 超出后自动清理 */
     private static final int DEFAULT_CACHE_TIME = 5;
     /** 默认等待时长 (毫秒)*/
-    private static final int DEFAULT_WAIT = 500;
+    private static final int DEFAULT_WAIT = 50;
     /** 限流器单机缓存 */
     private static final Cache<String, Map<String, RateLimiter>> LFU_CACHE;
 
@@ -42,16 +42,14 @@ public class RateLimiterUtil {
             // 当缓存取不到时 重新加载缓存，使用线程安全的
             Map<String, RateLimiter> tmpMap = Maps.newConcurrentMap();
             // 设置限流器
-//            RateLimiter rateLimiter = SmoothRateLimiterAccessor.create();
-            RateLimiter rateLimiter = SmoothRateLimiterAccessor.createSmoothBursty(dqs,60.0 * 0.5);
+            RateLimiter rateLimiter = RateLimiter.create(dqs,6000000L,TimeUnit.MICROSECONDS);
             tmpMap.put(clientUri, rateLimiter);
             return tmpMap;
         });
         long l = SECONDS.toMicros(1L);
         RateLimiter rateLimiter = stringRateLimiterMap.get(clientUri);
-        boolean flag = rateLimiter.tryAcquire(60,DEFAULT_WAIT,TimeUnit.MILLISECONDS);
         //如果令牌不够，等待DEFAULT_WAIT毫秒，够则放行
-        if(flag){
+        if(rateLimiter.tryAcquire(6,DEFAULT_WAIT,TimeUnit.MILLISECONDS)){
             return true;
         }else {
             return false;
